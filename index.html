@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>学长参谋 · 大学生活规划助手</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+                 "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #f5f0e8 0%, #e8dfd1 100%);
+    color: #2d2a26;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* ---- Chat container ---- */
+  .chat {
+    width: 100%;
+    max-width: 720px;
+    height: min(90vh, 820px);
+    background: #fdfbf6;
+    border-radius: 18px;
+    box-shadow: 0 18px 50px rgba(60, 45, 25, 0.18);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border: 1px solid rgba(170, 140, 80, 0.2);
+  }
+
+  /* ---- Header ---- */
+  .header {
+    padding: 18px 24px 14px;
+    background: linear-gradient(135deg, #8b6f3d 0%, #b8984f 100%);
+    color: #fdfbf6;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: #fdfbf6;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  }
+  .header-text h1 {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: 1px;
+  }
+  .header-text p {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+
+  /* ---- Messages ---- */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .messages::-webkit-scrollbar { width: 6px; }
+  .messages::-webkit-scrollbar-thumb {
+    background: #d4c5a8; border-radius: 3px;
+  }
+
+  .msg {
+    display: flex;
+    gap: 10px;
+    max-width: 85%;
+    animation: fadein .25s ease;
+  }
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .msg.user {
+    align-self: flex-end;
+    flex-direction: row-reverse;
+  }
+  .bubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14.5px;
+    line-height: 1.65;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.bot .bubble {
+    background: #f0e8d8;
+    color: #3a3228;
+    border-top-left-radius: 4px;
+  }
+  .msg.user .bubble {
+    background: #8b6f3d;
+    color: #fdfbf6;
+    border-top-right-radius: 4px;
+  }
+  .label {
+    font-size: 11px;
+    color: #a08a60;
+    min-width: 28px;
+    text-align: center;
+    padding-top: 4px;
+    flex-shrink: 0;
+  }
+  .msg.user .label { color: #8b6f3d; }
+
+  /* ---- Typing indicator ---- */
+  .typing {
+    display: flex; gap: 4px; padding: 4px 0;
+  }
+  .typing span {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #b8984f; opacity: 0.4;
+    animation: pulse 1.2s infinite;
+  }
+  .typing span:nth-child(2) { animation-delay: .2s; }
+  .typing span:nth-child(3) { animation-delay: .4s; }
+  @keyframes pulse {
+    0%, 60%, 100% { opacity: 0.4; transform: translateY(0); }
+    30%           { opacity: 1;   transform: translateY(-3px); }
+  }
+
+  /* ---- Suggestions (welcome) ---- */
+  .suggestions {
+    display: flex; flex-direction: column; gap: 8px;
+    padding: 4px 0;
+  }
+  .suggestion {
+    background: #f0e8d8;
+    border: 1px solid #e0d3b8;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 13.5px;
+    color: #5a4a30;
+    cursor: pointer;
+    transition: all .15s ease;
+    text-align: left;
+  }
+  .suggestion:hover {
+    background: #e8dcbe;
+    border-color: #b8984f;
+    transform: translateX(2px);
+  }
+
+  /* ---- Input ---- */
+  .input-area {
+    padding: 14px 18px 18px;
+    border-top: 1px solid #ece3d0;
+    background: #fdfbf6;
+    display: flex; gap: 10px;
+    align-items: flex-end;
+  }
+  textarea {
+    flex: 1;
+    border: 1px solid #d9cdb3;
+    border-radius: 12px;
+    padding: 11px 14px;
+    font: inherit;
+    font-size: 14.5px;
+    color: #2d2a26;
+    background: #fffdf7;
+    resize: none;
+    min-height: 44px;
+    max-height: 140px;
+    outline: none;
+    transition: border-color .15s;
+  }
+  textarea:focus { border-color: #b8984f; }
+  textarea::placeholder { color: #b5a788; }
+
+  .send-btn {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: none;
+    background: #8b6f3d;
+    color: #fdfbf6;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+    flex-shrink: 0;
+  }
+  .send-btn:hover:not(:disabled) {
+    background: #a68548;
+    transform: scale(1.04);
+  }
+  .send-btn:disabled {
+    background: #c4b598; cursor: not-allowed;
+  }
+
+  /* ---- Error ---- */
+  .msg.err .bubble {
+    background: #fbe9e9;
+    color: #b33a3a;
+    border-top-left-radius: 4px;
+  }
+
+  @media (max-width: 520px) {
+    body { padding: 0; }
+    .chat { height: 100vh; border-radius: 0; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="chat">
+  <div class="header">
+    <div class="avatar">🎓</div>
+    <div class="header-text">
+      <h1>学长参谋</h1>
+      <p>大学生活规划助手 · AI 驱动</p>
+    </div>
+  </div>
+
+  <div class="messages" id="messages"></div>
+
+  <div class="input-area">
+    <textarea id="input" placeholder="聊聊你的困惑，比如：大一该怎么选课？" rows="1"></textarea>
+    <button class="send-btn" id="sendBtn" title="发送 (Enter)">➤</button>
+  </div>
+</div>
+
+<script>
+(function() {
+  const messagesEl = document.getElementById('messages');
+  const inputEl    = document.getElementById('input');
+  const sendBtn    = document.getElementById('sendBtn');
+
+  // ---------- Helpers ----------
+  function scrollToBottom() {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+  function autoGrow() {
+    inputEl.style.height = 'auto';
+    inputEl.style.height = Math.min(inputEl.scrollHeight, 140) + 'px';
+  }
+
+  function addBubble({ who, text, label }) {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg ' + who;
+    const l = document.createElement('div');
+    l.className = 'label';
+    l.textContent = label || '';
+    const b = document.createElement('div');
+    b.className = 'bubble';
+    b.textContent = text;
+    wrap.appendChild(l);
+    wrap.appendChild(b);
+    messagesEl.appendChild(wrap);
+    scrollToBottom();
+    return wrap;
+  }
+
+  function addTyping() {
+    const wrap = document.createElement('div');
+    wrap.className = 'msg bot';
+    wrap.innerHTML =
+      '<div class="label">AI</div>' +
+      '<div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>';
+    messagesEl.appendChild(wrap);
+    scrollToBottom();
+    return wrap;
+  }
+
+  function addWelcome() {
+    addBubble({
+      who: 'bot', label: 'AI',
+      text: '你好！我是「学长参谋」，可以帮你选课、排课表、规划复习节奏、聊社团、聊实习、聊心态。想从哪开始？'
+    });
+    const sug = document.createElement('div');
+    sug.className = 'suggestions';
+    sug.innerHTML =
+      '<button class="suggestion">大一新生该怎么选课？有没有避坑指南？</button>' +
+      '<button class="suggestion">期末复习计划表帮我做一份，高数 + 英语 + 专业课</button>' +
+      '<button class="suggestion">想进实验室/竞赛，大一大二要准备什么？</button>' +
+      '<button class="suggestion">学校食堂太难吃了，附近有什么推荐？（不是学习的也行 😄）</button>';
+    sug.querySelectorAll('.suggestion').forEach(btn => {
+      btn.addEventListener('click', () => {
+        inputEl.value = btn.textContent;
+        send();
+      });
+    });
+    messagesEl.appendChild(sug);
+    scrollToBottom();
+  }
+
+  // ---------- Send / receive ----------
+  let busy = false;
+
+  async function send() {
+    if (busy) return;
+    const text = inputEl.value.trim();
+    if (!text) return;
+
+    busy = true;
+    sendBtn.disabled = true;
+
+    addBubble({ who: 'user', label: '你', text });
+    inputEl.value = '';
+    autoGrow();
+
+    const typing = addTyping();
+
+    try {
+      const resp = await fetch('/.netlify/functions/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: text })
+      });
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}));
+        throw new Error(err.error || '请求失败 (' + resp.status + ')');
+      }
+      const data = await resp.json();
+      typing.remove();
+      addBubble({ who: 'bot', label: 'AI', text: data.reply || '(空响应)' });
+    } catch (err) {
+      typing.remove();
+      addBubble({ who: 'err', label: '!', text: '出错了：' + err.message });
+    } finally {
+      busy = false;
+      sendBtn.disabled = false;
+      inputEl.focus();
+    }
+  }
+
+  // ---------- Events ----------
+  sendBtn.addEventListener('click', send);
+  inputEl.addEventListener('input', autoGrow);
+  inputEl.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  });
+
+  // ---------- Boot ----------
+  addWelcome();
+  inputEl.focus();
+})();
+</script>
+
+</body>
+</html>

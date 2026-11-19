@@ -1,0 +1,13 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+# Node 18+ has built-in fetch (used by chat.js)
+[build.environment]
+  NODE_VERSION = "20"
+
+# Optional: redirect root to index.html if needed
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
